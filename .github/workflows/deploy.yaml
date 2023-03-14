@@ -42,6 +42,8 @@ jobs:
                   username: ${{ env.DEPLOY_USER }}
                   key: ${{ env.DEPLOY_KEY }}
                   script: |
+                      eval $("ssh-agent")
+                      ssh-add ~/.ssh/github
                       cd /root/sample-vite-project
                       git pull origin main
 
