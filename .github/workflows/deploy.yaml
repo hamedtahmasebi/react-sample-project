@@ -64,8 +64,7 @@ jobs:
                   username: ${{ env.DEPLOY_USER }}
                   key: ${{ env.DEPLOY_KEY }}
                   script: |
-                      cd ${{ env.DEPLOY_DIR }}
+                      cd /root/sample-vite-project
                       npm install -g yarn
-                      yarn run build
                       rm -rf /var/www/sample-vite-project/*
                       cp -r dist/* /var/www/sample-vite-project
