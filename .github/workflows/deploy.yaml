@@ -42,7 +42,8 @@ jobs:
                   username: ${{ env.DEPLOY_USER }}
                   key: ${{ env.DEPLOY_KEY }}
                   script: |
-                      cd /root/sample-vite-project
+                      pwd
+                      cd /sample-vite-project
                       git pull origin main
 
             - name: Install deps
@@ -52,7 +53,7 @@ jobs:
                   username: ${{ env.DEPLOY_USER }}
                   key: ${{ env.DEPLOY_KEY }}
                   script: |
-                      cd /root/sample-vite-project
+                      cd /sample-vite-project
                       yarn install
 
             - name: Building the app
