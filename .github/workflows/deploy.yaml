@@ -36,7 +36,14 @@ jobs:
                   SSH_HOST: ${{ secrets.SSH_HOST }}
 
             - name: Pull new code
-              run: ssh staging 'cd /home/sample-vite-project && eval "$(ssh-agent -s)" && ssh-add ~/.ssh/github-actions && git pull origin main'
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ env.DEPLOY_HOST }}
+                  username: ${{ env.DEPLOY_USER }}
+                  key: ${{ env.DEPLOY_KEY }}
+                  script: |
+                      cd /home/sample-vite-project
+                      git pull origin main
 
             - name: Install deps
               uses: appleboy/ssh-action@master
@@ -46,7 +53,6 @@ jobs:
                   key: ${{ env.DEPLOY_KEY }}
                   script: |
                       cd /home/sample-vite-project
-                      npm install -g yarn
                       yarn install
 
             - name: Building the app
