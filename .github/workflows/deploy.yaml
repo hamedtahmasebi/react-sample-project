@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+    push:
+        branches:
+            - main
+
+env:
+    DEPLOY_HOST: ${{ secrets.SSH_HOST }}
+    DEPLOY_USER: ${{ secrets.SSH_USERNAME }}
+    DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    APP_NAME: "vite-sample-project"
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository code
+              uses: actions/checkout@v3
+
+            - name: Configure SSH
+              run: |
+                  mkdir -p ~/.ssh/
+                  echo "$SSH_KEY" > ~/.ssh/github-actions
+                  chmod 400 ~/.ssh/github-actions
+                  cat >>~/.ssh/config <<END
+                  Host staging
+                      HostName $SSH_HOST
+                      User $SSH_USER
+                      IdentityFile ~/.ssh/github-actions
+                      StrictHostKeyChecking no
+                  END
+                  env:
+                  SSH_USER: ${{ secrets.SSH_USER }}
+                  SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  SSH_HOST: ${{ secrets.SSH_HOST }}
+
+            - name: Pull new code
+              run: ssh staging 'cd /home/sample-vite-project && eval "$(ssh-agent -s)" && ssh-add ~/.ssh/github-actions && git pull origin main'
+
+            - name: Install deps
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ env.DEPLOY_HOST }}
+                  username: ${{ env.DEPLOY_USER }}
+                  key: ${{ env.DEPLOY_KEY }}
+                  script: |
+                      cd /home/sample-vite-project
+                      npm install -g yarn
+                      yarn install
+
+            - name: Building the app
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ env.DEPLOY_HOST }}
+                  username: ${{ env.DEPLOY_USER }}
+                  key: ${{ env.DEPLOY_KEY }}
+                  script: |
+                      cd ${{ env.DEPLOY_DIR }}
+                      npm install -g yarn
+                      yarn run build
+                      rm -rf /var/www/sample-vite-project/*
+                      cp -r dist/* /var/www/sample-vite-project
